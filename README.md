@@ -4,6 +4,8 @@
 **Nome:** Gustavo Barbosa Portela  
 **RA:** 1137640  
 
+**Testador do Jogo:** Gabriel Magalhães | 1137910
+
 ---
 
 ### 📖 Sobre o Jogo
