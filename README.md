@@ -43,8 +43,8 @@ O jogo foi desenvolvido como projeto acadêmico e utiliza conceitos de programa�
 1. Ao iniciar o jogo, o jogador aparecerá na parte inferior da tela ao lado do tesouro.
 2. Zumbis começarão a surgir das laterais da tela e seguir em direção ao tesouro.
 3. Mova-se com as setas do teclado para posicionar o soldado.
-4. Use a barra de espaço para atirar e eliminar os zumbis.
+4. Use a tecla *F* para atirar e eliminar os zumbis.
 5. O jogo termina se os zumbis alcançarem o tesouro.
-6. Pause a qualquer momento pressionando a tecla **P**.
+6. Pause a qualquer momento pressionando a tecla ** ESPAÇO **.
 
 ---

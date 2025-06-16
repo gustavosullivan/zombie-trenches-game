@@ -1,8 +1,4 @@
-import pygame
-import random
-import os
-import math
-import datetime
+import pygame, random, os, math, datetime
 from recursos.funcoes import limparTela, aguarde, reconhecimentoVoz, pc_falar
 
 # --- Inicialização do Pygame ---
