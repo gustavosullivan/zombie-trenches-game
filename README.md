@@ -31,9 +31,9 @@ O jogo foi desenvolvido como projeto acadêmico e utiliza conceitos de programa�
 
 | Tecla        | Função                     |
 |--------------|-----------------------------|
-| **← →**      | Movimentar jogador esquerda/direita |
-| **Barra de Espaço** | Atirar / Disparar projétil         |
-| **P**         | Pausar e despausar o jogo   |
+| **↑,↓**      | Movimentar jogador cima/baixo |
+| **Barra de Espaço** | Pausar e despausar o jogo         |
+| **F**         | Atirar / Disparar projétil   |
 | **ESC**       | Sair do jogo                |
 
 ---

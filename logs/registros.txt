@@ -4,3 +4,10 @@ ss - Pontos: 0 - Data: 12/06/2025 - Hora: 00:58:12
 iininjn  - Pontos: 3 - Data: 12/06/2025 - Hora: 01:26:37
 gugu - Pontos: 21 - Data: 12/06/2025 - Hora: 19:03:27
 gugs - Pontos: 2 - Data: 12/06/2025 - Hora: 19:04:56
+guga - Pontos: 28 - Data: 14/06/2025 - Hora: 12:05:58
+cs - Pontos: 0 - Data: 14/06/2025 - Hora: 12:07:51
+ff  - Pontos: 1 - Data: 15/06/2025 - Hora: 23:13:59
+f - Pontos: 1 - Data: 15/06/2025 - Hora: 23:14:15
+dsds - Pontos: 4 - Data: 15/06/2025 - Hora: 23:18:05
+r - Pontos: 5 - Data: 15/06/2025 - Hora: 23:28:11
+ffd - Pontos: 1 - Data: 15/06/2025 - Hora: 23:28:44

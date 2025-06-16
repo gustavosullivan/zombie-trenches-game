@@ -1,7 +1,11 @@
-import pygame, random, os, math, datetime
+import pygame
+import random
+import os
+import math
+import datetime
 from recursos.funcoes import limparTela, aguarde, reconhecimentoVoz, pc_falar
 
-
+# --- Inicialização do Pygame ---
 pygame.init()
 pygame.mixer.init()
 
@@ -12,7 +16,7 @@ pygame.display.set_caption("Defenda o Tesouro")
 
 # --- Cores ---
 BRANCO = (255, 255, 255)
-vermelho = (255, 0, 0)
+VERMELHO = (255, 0, 0)
 
 # --- Função para Carregar Imagens ---
 def carregar_imagem(nome, tamanho=None):
@@ -24,7 +28,7 @@ def carregar_imagem(nome, tamanho=None):
         imagem = pygame.transform.scale(imagem, tamanho)
     return imagem
 
-# --- Carregamento de Mídia (Imagens e Sons) ---
+# --- Carregamento de Mídia ---
 pygame.mixer.music.load(os.path.join("recursos", "tema_do_jogo.wav"))
 pygame.mixer.music.play(-1)
 
@@ -44,18 +48,19 @@ som_tiro = pygame.mixer.Sound(os.path.join("recursos", "tiro.wav"))
 som_inimigo_morto = pygame.mixer.Sound(os.path.join("recursos", "inimigo_morto.wav"))
 som_game_over = pygame.mixer.Sound(os.path.join("recursos", "game_over.wav"))
 
-# --- Interface do Lobby ---
+# --- Tela Inicial ---
 def mostrar_tela_inicial():
     fonte_grande = pygame.font.SysFont(None, 64)
     fonte_pequena = pygame.font.SysFont(None, 32)
-    input_ativo = True
     nome = ""
+    input_ativo = True
 
     while input_ativo:
         TELA.fill((0, 0, 0))
         titulo = fonte_grande.render("Digite seu nome:", True, BRANCO)
-        TELA.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 200))
         caixa_texto = fonte_grande.render(nome + "|", True, BRANCO)
+
+        TELA.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, 200))
         TELA.blit(caixa_texto, (LARGURA // 2 - caixa_texto.get_width() // 2, 300))
         pygame.display.flip()
 
@@ -68,11 +73,9 @@ def mostrar_tela_inicial():
                     input_ativo = False
                 elif evento.key == pygame.K_BACKSPACE:
                     nome = nome[:-1]
-                else:
-                    if len(nome) < 12:
-                        nome += evento.unicode
+                elif len(nome) < 12:
+                    nome += evento.unicode
 
-    # Tela de instruções
     aguardando = True
     while aguardando:
         TELA.fill((10, 10, 10))
@@ -84,6 +87,7 @@ def mostrar_tela_inicial():
             "Aperte ESPAÇO para pausar.",
             "Boa sorte!"
         ]
+
         TELA.blit(bem_vindo, (LARGURA // 2 - bem_vindo.get_width() // 2, 150))
         for i, linha in enumerate(instrucoes):
             txt = fonte_pequena.render(linha, True, BRANCO)
@@ -91,6 +95,7 @@ def mostrar_tela_inicial():
 
         pressione = fonte_pequena.render("Aperte ESPAÇO para começar", True, BRANCO)
         TELA.blit(pressione, (LARGURA // 2 - pressione.get_width() // 2, 500))
+
         pygame.display.flip()
 
         for evento in pygame.event.get():
@@ -102,7 +107,7 @@ def mostrar_tela_inicial():
 
     return nome
 
-# Função para salvar log
+# --- Log de Partidas ---
 def salvar_log(nome_jogador, pontos):
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -113,18 +118,14 @@ def salvar_log(nome_jogador, pontos):
     with open(caminho, "a", encoding="utf-8") as f:
         f.write(f"{nome_jogador} - Pontos: {pontos} - Data: {data} - Hora: {hora}\n")
 
-# Mostrar últimos registros na tela
 def mostrar_ultimos_registros_na_tela(tela, fonte, caminho_log):
     if not os.path.exists(caminho_log):
         return
-
     with open(caminho_log, "r", encoding="utf-8") as f:
         linhas = f.readlines()[-5:]
-        linhas = [linha.strip() for linha in linhas if linha.strip()]
-
+    linhas = [linha.strip() for linha in linhas if linha.strip()]
     titulo = fonte.render("Últimos 5 Registros:", True, BRANCO)
     tela.blit(titulo, (LARGURA // 2 - titulo.get_width() // 2, ALTURA // 2 + 50))
-
     for i, linha in enumerate(linhas):
         texto = fonte.render(linha, True, BRANCO)
         tela.blit(texto, (LARGURA // 2 - texto.get_width() // 2, ALTURA // 2 + 90 + i * 30))
@@ -144,6 +145,7 @@ vel_bala = 10
 vel_inimigo = 3
 intervalo_spawn = 1500
 tempo_ultimo_inimigo = pygame.time.get_ticks()
+
 vida_tesouro = 3
 pontuacao = 0
 
@@ -153,6 +155,7 @@ tempo_inicial = pygame.time.get_ticks()
 paused = False
 rodando = True
 
+# --- Loop Principal ---
 while rodando:
     clock.tick(60)
     tempo_atual = pygame.time.get_ticks()
@@ -161,8 +164,12 @@ while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
-        if evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
-            paused = not paused
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_SPACE:
+                paused = not paused
+            elif evento.key == pygame.K_ESCAPE:
+                pygame.quit()
+                exit()
 
     if paused:
         TELA.fill((30, 30, 30))
@@ -171,25 +178,27 @@ while rodando:
         pygame.display.flip()
         continue
 
+    # Atualização de Tela
     TELA.blit(fundo_img, (0, 0))
 
+    # Movimento
     teclas = pygame.key.get_pressed()
     if teclas[pygame.K_UP] and jogador.top > 0:
         jogador.y -= vel_jogador
     if teclas[pygame.K_DOWN] and jogador.bottom < ALTURA:
         jogador.y += vel_jogador
+    if teclas[pygame.K_f] and len(balas) < 5:
+        nova_bala = pygame.Rect(jogador.right, jogador.centery - 5, 10, 10)
+        balas.append(nova_bala)
+        som_tiro.play()
 
-    if teclas[pygame.K_f]:
-        if len(balas) < 5:
-            nova_bala = pygame.Rect(jogador.right, jogador.centery - 5, 10, 10)
-            balas.append(nova_bala)
-            som_tiro.play()
-
+    # Balas
     for bala in balas[:]:
         bala.x += vel_bala
         if bala.x > LARGURA:
             balas.remove(bala)
 
+    # Inimigos
     agora = pygame.time.get_ticks()
     if agora - tempo_ultimo_inimigo > intervalo_spawn:
         inimigo_y = random.randint(0, ALTURA - inimigo_img.get_height())
@@ -198,7 +207,6 @@ while rodando:
 
     for inimigo in inimigos[:]:
         inimigo.x -= vel_inimigo
-
         if inimigo.colliderect(area_colisao_tesouro) or inimigo.colliderect(jogador):
             vida_tesouro -= 1
             inimigos.remove(inimigo)
@@ -211,13 +219,15 @@ while rodando:
                     som_inimigo_morto.play()
                     break
 
+    # Desenho dos Elementos
     TELA.blit(tesouro_img, tesouro_visual)
     TELA.blit(jogador_img, jogador)
     for inimigo in inimigos:
         TELA.blit(inimigo_img, inimigo)
     for bala in balas:
-        pygame.draw.rect(TELA, vermelho, bala)
+        pygame.draw.rect(TELA, VERMELHO, bala)
 
+    # HUD
     texto = fonte.render(f"Pontos: {pontuacao}", True, BRANCO)
     TELA.blit(texto, (20, 20))
     texto_instrucao = fonte.render("Aperte espaço para pausar", True, BRANCO)
@@ -247,12 +257,11 @@ while rodando:
         rodando = False
         pygame.mixer.music.stop()
 
-# --- Tela de Game Over ---
+# --- Game Over ---
 TELA.fill((0, 0, 0))
 msg = fonte.render(f"Game Over! Pontuação final: {pontuacao}", True, BRANCO)
 TELA.blit(msg, (LARGURA // 2 - msg.get_width() // 2, ALTURA // 2))
 
-# Mostrar últimos registros
 salvar_log(nome_jogador, pontuacao)
 mostrar_ultimos_registros_na_tela(TELA, fonte, "logs/registros.txt")
 
