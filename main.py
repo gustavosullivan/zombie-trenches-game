@@ -1,20 +1,20 @@
 
 import pygame, random, os, math, datetime
-from recursos.funcoes import limparTela, aguarde, reconhecimentoVoz, pc_falar
+import speech_recognition as sr
+import pyttsx3
 
 pygame.init()
 pygame.mixer.init()
 
-# --- Configurações da Tela ---
 LARGURA, ALTURA = 1000, 700
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Defenda o Tesouro")
 
-# --- Cores ---
 BRANCO = (255, 255, 255)
 VERMELHO = (255, 0, 0)
+CINZA_CLARO = (200, 200, 200)
+PRETO = (0, 0, 0)
 
-# --- Função para Carregar Imagens ---
 def carregar_imagem(nome, tamanho=None):
     caminho = os.path.join(os.path.dirname(__file__), "recursos", nome)
     if not os.path.exists(caminho):
@@ -24,13 +24,62 @@ def carregar_imagem(nome, tamanho=None):
         imagem = pygame.transform.scale(imagem, tamanho)
     return imagem
 
-# --- Carregamento de Mídia (sem iniciar música ainda) ---
+def aguarde(ms):
+    pygame.time.delay(ms)
+
+def limparTela(tela, cor=(0,0,0)):
+    tela.fill(cor)
+
+def reconhecimentoVoz():
+    r = sr.Recognizer()
+    r.energy_threshold = 400
+    r.dynamic_energy_threshold = True
+    r.pause_threshold = 0.8
+    r.non_speaking_duration = 0.5
+
+    with sr.Microphone() as source:
+        print("Calibrando ruído ambiente... Por favor, aguarde.")
+        r.adjust_for_ambient_noise(source, duration=1)
+        print("Pronto! Aguardando seu nome...")
+        
+        try:
+            
+            audio = r.listen(source, timeout=6.5, phrase_time_limit=5)
+        except sr.WaitTimeoutError:
+            print("Nenhuma fala detectada dentro do tempo limite.")
+            return ""
+        except Exception as e:
+            print(f"Erro ao capturar áudio: {e}")
+            return ""
+
+    try:
+        nome = r.recognize_google(audio, language="pt-BR")
+        print(f"Nome reconhecido: {nome}")
+        return nome
+    except sr.UnknownValueError:
+        print("Não foi possível entender o que você disse.")
+        return ""
+    except sr.RequestError as e:
+        print(f"Erro ao solicitar resultados do serviço Google Speech Recognition; {e}")
+        print("Verifique sua conexão com a internet ou as configurações da API.")
+        return ""
+
+def pc_falar(texto, voz_grossa=False):
+    engine = pyttsx3.init()
+    
+    if voz_grossa:
+        engine.setProperty('rate', 150)
+        engine.setProperty('volume', 0.9)
+    
+    engine.say(texto)
+    engine.runAndWait()
+
 fundo_img = carregar_imagem("fundo.png", (LARGURA, ALTURA))
 jogador_img = carregar_imagem("jogador.png", (80, 100))
 inimigo_img = carregar_imagem("inimigo.png", (80, 100))
 tesouro_img = carregar_imagem("tesouro.png", (50, 80))
 erva_daninha_img = carregar_imagem("erva_daninha.png", (60, 60))
-
+tela_inicio_img = carregar_imagem("tela.inicio.png", (LARGURA, ALTURA))
 coracoes_imgs = [
     carregar_imagem("heart_full.png"),
     carregar_imagem("heart_2_3.png"),
@@ -38,63 +87,108 @@ coracoes_imgs = [
     carregar_imagem("heart_empty.png")
 ]
 
+limparTela
+
 som_tiro = pygame.mixer.Sound(os.path.join("recursos", "tiro.wav"))
 som_inimigo_morto = pygame.mixer.Sound(os.path.join("recursos", "inimigo_morto.wav"))
 som_game_over = pygame.mixer.Sound(os.path.join("recursos", "game_over.wav"))
 pygame.mixer.music.load(os.path.join("recursos", "tema_do_jogo.wav"))
 
-# Reduzir volume dos sons
 som_tiro.set_volume(0.4)
 som_inimigo_morto.set_volume(0.4)
 som_game_over.set_volume(0.4)
-pygame.mixer.music.set_volume(0.3)  # Música só tocará após o menu
+pygame.mixer.music.set_volume(0.3)
 
-# --- Tela Inicial com reconhecimento de voz ---
+limparTela
+
 def mostrar_tela_inicial():
     fonte_grande = pygame.font.SysFont(None, 64)
     fonte_pequena = pygame.font.SysFont(None, 32)
     nome = ""
     aguardando_nome = True
     esperando_comeco = False
+    
+    voz_ativada = True 
+    
+    input_rect = pygame.Rect(LARGURA // 2 - 200, 250, 400, 60)
+    cor_borda_input = BRANCO
+    
+    texto_instrucao_voz = fonte_pequena.render('Aperte "G" e fale seu nome', True, BRANCO)
+    texto_instrucao_digitar = fonte_pequena.render('Ou clique abaixo para digitar', True, BRANCO)
 
     while aguardando_nome:
-        TELA.fill((0, 0, 0))
-        texto_topo = fonte_grande.render("Digite seu nome", True, BRANCO)
-        texto_nome = fonte_grande.render(nome + "|", True, BRANCO)
-        texto_voz = fonte_pequena.render('Aperte "G" para falar seu nome', True, BRANCO)
+        TELA.blit(tela_inicio_img, (0, 0)) 
 
-        TELA.blit(texto_topo, (LARGURA // 2 - texto_topo.get_width() // 2, 180))
-        TELA.blit(texto_nome, (LARGURA // 2 - texto_nome.get_width() // 2, 260))
-        TELA.blit(texto_voz, (LARGURA // 2 - texto_voz.get_width() // 2, 340))
+        texto_topo = fonte_grande.render("Bem-vindo!", True, BRANCO)
+        TELA.blit(texto_topo, (LARGURA // 2 - texto_topo.get_width() // 2, 100))
+
+        
+        pygame.draw.rect(TELA, cor_borda_input, input_rect, 2)
+        
+        
+        if nome:
+            texto_nome_display = fonte_grande.render(nome, True, BRANCO)
+            TELA.blit(texto_nome_display, (input_rect.x + 10, input_rect.y + 5))
+        else:
+            if not voz_ativada: 
+                cursor_visivel = pygame.time.get_ticks() % 1000 < 500
+                texto_cursor = fonte_grande.render("|" if cursor_visivel else "", True, BRANCO)
+                TELA.blit(texto_cursor, (input_rect.x + 10, input_rect.y + 5))
+            else: 
+                texto_aguardando = fonte_pequena.render("Fale seu nome...", True, BRANCO)
+                TELA.blit(texto_aguardando, (input_rect.x + 10, input_rect.y + (input_rect.height // 2) - (texto_aguardando.get_height() // 2)))
+
+
+        
+        TELA.blit(texto_instrucao_voz, (LARGURA // 2 - texto_instrucao_voz.get_width() // 2, 340))
+        TELA.blit(texto_instrucao_digitar, (LARGURA // 2 - texto_instrucao_digitar.get_width() // 2, 400))
+
         pygame.display.flip()
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                if input_rect.collidepoint(evento.pos): 
+                    voz_ativada = False 
+                    cor_borda_input = CINZA_CLARO 
+                    nome = "" 
+                else: 
+                    voz_ativada = True 
+                    cor_borda_input = BRANCO 
+                    nome = "" 
+
             if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_RETURN and nome:
-                    aguardando_nome = False
-                    esperando_comeco = True
-                    pc_falar(f"Bem-vindo, {nome}", voz_grossa=True)
-                elif evento.key == pygame.K_BACKSPACE:
+                if evento.key == pygame.K_RETURN:
+                    
+                    if not voz_ativada and nome:
+                        aguardando_nome = False
+                        esperando_comeco = True
+                        pc_falar(f"Bem-vindo, {nome}", voz_grossa=True)
+                elif evento.key == pygame.K_BACKSPACE and not voz_ativada:
                     nome = nome[:-1]
-                elif evento.key == pygame.K_g:
+                elif evento.key == pygame.K_g and voz_ativada: 
                     try:
                         pc_falar("Diga seu nome", voz_grossa=True)
-                        nome_voz = reconhecimentoVoz().capitalize()
+                        nome_voz = reconhecimentoVoz().strip().capitalize()
                         if nome_voz:
                             nome = nome_voz
+                            
                             pc_falar(f"Bem-vindo, {nome}", voz_grossa=True)
                             aguardando_nome = False
                             esperando_comeco = True
+                        else:
+                            pc_falar("Não entendi o seu nome. Por favor, tente falar novamente.", voz_grossa=True)
+                            nome = ""
                     except Exception as e:
                         print(f"Erro no reconhecimento de voz: {e}")
-                        nome = "Jogador"
-                        pc_falar("Bem-vindo, Jogador", voz_grossa=True)
-                        aguardando_nome = False
-                        esperando_comeco = True
-                elif len(nome) < 12:
+                        pc_falar("Ocorreu um erro no reconhecimento de voz. Por favor, clique e digite seu nome.", voz_grossa=True)
+                        voz_ativada = False 
+                        cor_borda_input = CINZA_CLARO
+                        nome = ""
+                elif not voz_ativada and len(nome) < 12:
                     nome += evento.unicode
 
     while esperando_comeco:
@@ -123,10 +217,9 @@ def mostrar_tela_inicial():
             if evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
                 esperando_comeco = False
 
-    # Música só inicia agora
     pygame.mixer.music.play(-1)
     return nome
-# --- Log de Partidas ---
+
 def salvar_log(nome_jogador, pontos):
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -149,7 +242,7 @@ def mostrar_ultimos_registros_na_tela(tela, fonte, caminho_log):
         texto = fonte.render(linha, True, BRANCO)
         tela.blit(texto, (LARGURA // 2 - texto.get_width() // 2, ALTURA // 2 + 90 + i * 30))
 
-# --- Inicialização do Jogo ---
+
 nome_jogador = mostrar_tela_inicial()
 
 jogador = pygame.Rect(125, ALTURA // 2 - jogador_img.get_height() // 2, jogador_img.get_width(), jogador_img.get_height())
@@ -163,26 +256,23 @@ erva_daninha_dx = random.choice([-1, 1]) * random.uniform(0.5, 1.5)
 erva_daninha_dy = random.choice([-1, 1]) * random.uniform(0.5, 1.5)
 tempo_ultima_mudanca_erva = pygame.time.get_ticks()
 angulo_erva = 0
-
 balas = []
 inimigos = []
-
 vel_jogador = 5
 vel_bala = 10
 vel_inimigo = 3
 intervalo_spawn = 1500
 tempo_ultimo_inimigo = pygame.time.get_ticks()
-
 vida_tesouro = 3
 pontuacao = 0
-
 fonte = pygame.font.SysFont(None, 36)
 clock = pygame.time.Clock()
 tempo_inicial = pygame.time.get_ticks()
 paused = False
 rodando = True
 
-# --- Loop Principal ---
+limparTela
+
 while rodando:
     clock.tick(60)
     tempo_atual = pygame.time.get_ticks()
@@ -296,8 +386,7 @@ while rodando:
         rodando = False
         pygame.mixer.music.stop()
 
-# --- Game Over ---
-TELA.fill((0, 0, 0))
+TELA.fill(PRETO)
 msg = fonte.render(f"Game Over! Pontuação final: {pontuacao}", True, BRANCO)
 TELA.blit(msg, (LARGURA // 2 - msg.get_width() // 2, ALTURA // 2))
 
@@ -307,4 +396,3 @@ mostrar_ultimos_registros_na_tela(TELA, fonte, "logs/registros.txt")
 pygame.display.flip()
 pygame.time.delay(5000)
 pygame.quit()
-

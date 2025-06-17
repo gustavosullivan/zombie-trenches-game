@@ -19,3 +19,5 @@ Jogador - Pontos: 15 - Data: 17/06/2025 - Hora: 00:11:00
 Jogar porra - Pontos: 0 - Data: 17/06/2025 - Hora: 00:30:39
 oiodfaidjddj - Pontos: 8 - Data: 17/06/2025 - Hora: 00:34:51
 jailson mend - Pontos: 19 - Data: 17/06/2025 - Hora: 00:36:35
+gustavo - Pontos: 14 - Data: 17/06/2025 - Hora: 00:50:05
+Carlos - Pontos: 21 - Data: 17/06/2025 - Hora: 01:24:54
