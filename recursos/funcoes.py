@@ -1,7 +1,8 @@
 import os, time, speech_recognition, pyttsx3
 
+
 def limparTela():
-    os.system("cls")
+    os.system("cls" if os.name == "nt" else "clear")
 
 def aguarde(segundos):
     time.sleep(segundos)
@@ -26,11 +27,22 @@ def reconhecimentoVoz():
         print(f"Erro ao solicitar reconhecimento de voz: {e}")
         return ""
 
-def pc_falar():
+def pc_falar(texto, voz_grossa=False):
     engine = pyttsx3.init()
-    engine.setProperty('rate', 150)  # Velocidade da fala
-    engine.setProperty('volume', 1)  # Volume (0.0 a 1.0)
-    
-    engine.say("")
+    engine.setProperty('rate', 140)     # Velocidade da fala
+    engine.setProperty('volume', 1.0)   # Volume máximo
+
+    vozes = engine.getProperty('voices')
+
+    # Tenta selecionar uma voz masculina ou "grossa"
+    for voz in vozes:
+        if voz_grossa and ("brazil" in voz.name.lower() or "male" in voz.name.lower()):
+            engine.setProperty('voice', voz.id)
+            break
+    else:
+        # Se não encontrar uma voz específica, usa a padrão
+        engine.setProperty('voice', vozes[0].id)
+
+    print(f"Falando: {texto}")
+    engine.say(texto)
     engine.runAndWait()
-    
