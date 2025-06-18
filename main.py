@@ -16,12 +16,15 @@ CINZA_CLARO = (200, 200, 200)
 PRETO = (0, 0, 0)
 
 def carregar_imagem(nome, tamanho=None):
-    caminho = os.path.join(os.path.dirname(__file__), "recursos", nome)
+    # Carrega a imagem diretamente da pasta 'recursos'
+    caminho = os.path.join("recursos", nome)  # Usando caminho relativo para a pasta 'recursos'
+    
     if not os.path.exists(caminho):
         raise FileNotFoundError(f"Imagem não encontrada: {caminho}")
-    imagem = pygame.image.load(caminho).convert_alpha()
+    
+    imagem = pygame.image.load(caminho).convert_alpha()  # Carrega a imagem com transparência
     if tamanho:
-        imagem = pygame.transform.scale(imagem, tamanho)
+        imagem = pygame.transform.scale(imagem, tamanho)  # Redimensiona a imagem se necessário
     return imagem
 
 def aguarde(ms):
@@ -74,7 +77,7 @@ def pc_falar(texto, voz_grossa=False):
     engine.say(texto)
     engine.runAndWait()
 
-fundo_img = carregar_imagem("fundo.png", (LARGURA, ALTURA))
+fundo_img = pygame.image.load("recursos/fundo.png")
 jogador_img = carregar_imagem("jogador.png", (80, 100))
 inimigo_img = carregar_imagem("inimigo.png", (80, 100))
 tesouro_img = carregar_imagem("tesouro.png", (50, 80))
