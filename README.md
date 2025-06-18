@@ -4,6 +4,10 @@
 **Nome:** Gustavo Barbosa Portela  
 **RA:** 1137640  
 
+### Testador
+**Nome:** Bruno Galvagni
+**RA:** 1137862
+
 **Testador do Jogo:** Gabriel Magalhães | 1137910
 
 ---
